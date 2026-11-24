@@ -43,6 +43,14 @@ cell Board::game_state(std::size_t row, std::size_t column) {
     return result;
 }
 
+cell Board::state(std::size_t row, std::size_t column) {
+    cell result;
+    auto mapped = ext2int_idx(row, column);
+    result.is_revealed = revealed_map[mapped];
+    result.mine_count = mine_count[mapped];
+    return result;
+}
+
 std::string Board::to_str() {
     char result[rows*columns + rows];
     std::size_t char_idx = 0;
