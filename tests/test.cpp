@@ -23,9 +23,30 @@ bool test_reveal() {
     std::cout << "Exposed state after reveal middle" << std::endl;
     std::cout << board.to_str() << std::endl;
 
-    return true;
+    return passed;
+}
+
+bool test_factory() {
+    DefaultBoardFactory factory(9, 9, 10, false);
+    Board board = factory.generate(4, 4);
+    std::cout << board.to_str() << std::endl;
+
+    bool passed = true;
+    if (!board.reveal(4, 4)) passed = false;
+    std::cout << board.to_str() << std::endl;
+    factory = DefaultBoardFactory(9, 9, 10, true);
+    board = factory.generate(4, 4);
+    board.reveal(4, 4);
+    if (!board.reveal(4, 4)) passed = false;
+    if (board.game_state(4, 4).mine_count > 0) passed = false;
+    std::cout << board.to_str() << std::endl;
+    return passed;
 }
 
 int main() {
-    std::cout << "Reveal test status: " << (test_reveal() ? "passed" : "failed") << std::endl;
+    bool test_reveal_res = test_reveal();
+    bool test_factory_res = test_factory();
+    std::cout << "Reveal test status: " << (test_reveal_res ? "passed" : "failed") << std::endl;
+    std::cout << "Factory test status: " << (test_factory_res ? "passed" : "failed") << std::endl;
+
 }
