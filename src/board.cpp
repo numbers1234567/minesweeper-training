@@ -21,6 +21,9 @@ Board::Board(std::size_t rows, std::size_t columns, bool mine_map[], bool reveal
             if (revealed_map[ext2int_idx(i,j)]) reveal(i,j);
 }
 
+std::size_t Board::get_rows() { return rows; }
+std::size_t Board::get_columns() { return columns; }
+
 std::vector<std::size_t> Board::neighbors(std::size_t idx) {
     std::size_t cell_row = idx / rows;
     std::size_t cell_col = idx % columns;

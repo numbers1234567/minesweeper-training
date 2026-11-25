@@ -34,6 +34,9 @@ public:
     cell game_state(std::size_t row, std::size_t column);
     cell state(std::size_t row, std::size_t column);
 
+    std::size_t get_rows();
+    std::size_t get_columns();
+
     std::string to_str();
 };
 
