@@ -5,14 +5,18 @@
 
 using namespace MinesweeperLogic;
 
-bool test_reveal() {
+Board board_8() {
     bool mine_map[49]{};
     bool revealed_map[49]{};
     for (int i=16;i<19;i++) mine_map[i]=true;
     mine_map[16+7] = true, mine_map[16+7+2] = true;
     for (int i=16+14;i<19+14;i++) mine_map[i]=true;
     Board board(7, 7, mine_map, revealed_map);
+    return board;
+}
 
+bool test_reveal() {
+    Board board = board_8();
     bool passed = true;
     // Check the is_revealed
     std::cout << "Exposed state" << std::endl;
