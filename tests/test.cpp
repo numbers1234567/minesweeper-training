@@ -1,6 +1,9 @@
 
 #include "../src/board.h"
+//#include "../src/board_clients.h"
 #include <iostream>
+
+using namespace MinesweeperLogic;
 
 bool test_reveal() {
     bool mine_map[49]{};

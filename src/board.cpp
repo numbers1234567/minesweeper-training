@@ -2,9 +2,11 @@
 #include <queue>
 #include <iostream>
 
-std::size_t Board::ext2int_idx(std::size_t row, std::size_t column) { return row*rows + column; }
+using namespace MinesweeperLogic;
 
-Board::Board(std::size_t rows, std::size_t columns, bool mine_map[], bool revealed_map[]) 
+std::size_t Board::ext2int_idx(dim row, dim column) { return row*rows + column; }
+
+Board::Board(dim rows, dim columns, bool mine_map[], bool revealed_map[]) 
     : rows(rows), columns(columns), mine_map(std::vector<bool>(mine_map, mine_map + rows*columns)) {
     this->revealed_map = std::vector<bool>(rows*columns, false);
 
@@ -21,23 +23,23 @@ Board::Board(std::size_t rows, std::size_t columns, bool mine_map[], bool reveal
             if (revealed_map[ext2int_idx(i,j)]) reveal(i,j);
 }
 
-std::size_t Board::get_rows() { return rows; }
-std::size_t Board::get_columns() { return columns; }
+dim Board::get_rows() { return rows; }
+dim Board::get_columns() { return columns; }
 
 std::vector<std::size_t> Board::neighbors(std::size_t idx) {
     std::size_t cell_row = idx / rows;
     std::size_t cell_col = idx % columns;
-    std::size_t row_lower = std::max((int)cell_row-1, 0), row_upper = std::min(cell_row+2, rows);
-    std::size_t col_lower = std::max((int)cell_col-1, 0), col_upper = std::min(cell_col+2, columns);
+    std::size_t row_lower = std::max((int)cell_row-1, 0), row_upper = std::min((int)cell_row+2, (int)rows);
+    std::size_t col_lower = std::max((int)cell_col-1, 0), col_upper = std::min((int)cell_col+2, (int)columns);
     std::vector<std::size_t> ret;
-    for (std::size_t next_row=row_lower;next_row<row_upper;next_row++)
-        for (std::size_t next_col=col_lower;next_col<col_upper;next_col++) {
+    for (dim next_row=row_lower;next_row<row_upper;next_row++)
+        for (dim next_col=col_lower;next_col<col_upper;next_col++) {
             ret.push_back(this->ext2int_idx(next_row, next_col));
         }
     return ret;
 }
 
-cell Board::game_state(std::size_t row, std::size_t column) {
+cell Board::game_state(dim row, dim column) {
     cell result;
     auto mapped = ext2int_idx(row, column);
     result.is_revealed = revealed_map[mapped];
@@ -46,7 +48,7 @@ cell Board::game_state(std::size_t row, std::size_t column) {
     return result;
 }
 
-cell Board::state(std::size_t row, std::size_t column) {
+cell Board::state(dim row, dim column) {
     cell result;
     auto mapped = ext2int_idx(row, column);
     result.is_revealed = revealed_map[mapped];
@@ -58,8 +60,8 @@ cell Board::state(std::size_t row, std::size_t column) {
 std::string Board::to_str() {
     char result[rows*columns + rows];
     std::size_t char_idx = 0;
-    for (std::size_t row=0;row<rows;row++) {
-        for (std::size_t col=0;col<columns;col++) {
+    for (dim row=0;row<rows;row++) {
+        for (dim col=0;col<columns;col++) {
             cell state = game_state(row,col);
             if (state.is_revealed) result[char_idx++] = '0' + state.mine_count;
             else                   result[char_idx++] = 'x';
@@ -69,7 +71,7 @@ std::string Board::to_str() {
     return std::string(result, result+char_idx);
 }
 
-bool Board::reveal(std::size_t row, std::size_t column) {
+bool Board::reveal(dim row, dim column) {
     std::size_t mapped_idx = ext2int_idx(row, column);
     if (mine_map[mapped_idx]) return false;
     if (revealed_map[mapped_idx]) return true;
@@ -91,7 +93,7 @@ bool Board::reveal(std::size_t row, std::size_t column) {
 }
 
 DefaultBoardFactory::DefaultBoardFactory(
-    std::size_t rows, std::size_t columns, std::size_t mine_count, bool guarantee_0_start
+    dim rows, dim columns, std::uint16_t mine_count, bool guarantee_0_start
 ) : rows(rows), columns(columns), mine_count(mine_count), guarantee_0_start(guarantee_0_start) {
     if (mine_count + 1 + 8*guarantee_0_start > rows*columns) throw std::invalid_argument("Too many mines for this board setting");
     
@@ -119,8 +121,8 @@ Board DefaultBoardFactory::generate() {
     }
     return Board(rows, columns, mines, revealed);
 }
-Board DefaultBoardFactory::generate(std::size_t start_row, std::size_t start_col) {
-    std::size_t left=mine_count;
+Board DefaultBoardFactory::generate(dim start_row, dim start_col) {
+    std::uint16_t left=mine_count;
 
     bool revealed[rows*columns]{};
     bool mines[rows*columns]{};
