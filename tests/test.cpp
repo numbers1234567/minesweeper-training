@@ -1,9 +1,13 @@
 
 #include "../src/board.h"
-//#include "../src/board_clients.h"
+#include "../src/board_clients.h"
+#include <boost/process.hpp>
 #include <iostream>
 
 using namespace MinesweeperLogic;
+using namespace MSInterface;
+namespace bp = boost::process;
+namespace bip = boost::interprocess;
 
 Board board_8() {
     bool mine_map[49]{};
@@ -33,6 +37,67 @@ bool test_reveal() {
     return passed;
 }
 
+bool test_shm() {
+    bool passed=true;
+
+    struct shm_remove
+    {
+        shm_remove() {
+            bip::shared_memory_object::remove("test1");
+            bip::shared_memory_object::remove("test2");
+        }
+        ~shm_remove(){
+            bip::shared_memory_object::remove("test1");
+            bip::shared_memory_object::remove("test2");
+        }
+    } remover;
+    bip::managed_shared_memory shm1(bip::create_only, "test1", 65536);
+    bip::managed_shared_memory shm2(bip::create_only, "test2", 65536);
+    {
+    bp::opstream into;
+    bp::child c("shm_board_reader", "test1", "priviliged", bp::std_in < into);
+    std::cout << "Init child" << std::endl;
+    sleep(1);
+    into << "go" << std::endl;
+    into << "end" << std::endl;
+    
+    c.wait();
+    if (c.exit_code() == 0) passed = false;
+    }
+    {
+    Board board = board_8();
+    std::shared_ptr<Board> ptr = std::make_shared<Board>(board);
+    MSInterface::SharedMemoryBoardWriter writer(ptr, "test2", false);
+
+    bp::opstream into;
+    bp::ipstream out;
+
+    bp::child c("shm_board_reader", "test2", "unpriviliged", bp::std_in < into, bp::std_out > out);
+    into << "go" << std::endl;
+    std::string res;
+    std::getline(out, res);
+    std::cout << "dim " << res << std::endl;
+    for (int i=0;i<7;i++) {
+        std::getline(out, res);
+        if (res != "#######") passed = false;
+        std::cout << res << std::endl;
+    }
+    std::cout << "Revealing" << std::endl;
+    writer.reveal(0, 0);
+    std::cout << "Revealed" << std::endl;
+    into << "go" << std::endl;
+    std::getline(out, res);
+    std::getline(out, res);
+    std::cout << res << std::endl;
+    if (res != "0000000") passed = false;
+    into << "end" << std::endl;
+    c.wait();
+    if (c.exit_code() != 0) passed=false;
+    }
+
+    return passed;
+}
+
 bool test_factory() {
     DefaultBoardFactory factory(9, 9, 10, false);
     Board board = factory.generate(4, 4);
@@ -53,7 +118,9 @@ bool test_factory() {
 int main() {
     bool test_reveal_res = test_reveal();
     bool test_factory_res = test_factory();
+    bool test_shm_res = test_shm();
     std::cout << "Reveal test status: " << (test_reveal_res ? "passed" : "failed") << std::endl;
     std::cout << "Factory test status: " << (test_factory_res ? "passed" : "failed") << std::endl;
+    std::cout << "Shared memory test status: " << (test_shm_res ? "passed" : "failed") << std::endl;
 
 }
