@@ -51,6 +51,7 @@ cell Board::state(std::size_t row, std::size_t column) {
     auto mapped = ext2int_idx(row, column);
     result.is_revealed = revealed_map[mapped];
     result.mine_count = mine_count[mapped];
+    result.has_mine = mine_map[mapped];
     return result;
 }
 

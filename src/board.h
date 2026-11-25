@@ -8,6 +8,7 @@
 
 struct cell {
     std::uint8_t mine_count;
+    bool has_mine;
     bool is_revealed;
 };
 
